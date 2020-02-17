@@ -354,7 +354,7 @@ $ sudo kubeadm join k8s-master.lab.vstable.com:6443 --token v8tfi1.ee4xtvf7k4xy5
     --control-plane --certificate-key 2f3ca04ebc34ab5e97b2748407b1685586cbfc5cf6b082606664a7ea7a5997bb
 ```
 
-> Before we add those additional control plan nodes, you’ll need to copy the contents of the pki directory to the other control plane nodes. This is needed because they need those certificates for authentication purposes with the existing control plane node.
+> Before we add any additional control plan nodes you will need to copy the contents of the pki directory to the other control plane nodes. This is needed because those certificates are for authentication purposes with the existing control plane node.
 
 ### Join Worker Nodes to the Cluster (we will do this)
 Using the output above from kubeadm, copy and paste the text below (yours will be similar but not the same) to each of your worker nodes:
@@ -481,4 +481,26 @@ k8s-master    Ready    master   25m   v1.17.3   10.0.200.123   10.0.200.123   Ub
 k8s-worker1   Ready    <none>   17m   v1.17.3   10.0.200.207   <none>         Ubuntu 18.04.4 LTS   4.15.0-88-generic   docker://19.3.6
 k8s-worker2   Ready    <none>   16m   v1.17.3   10.0.200.129   <none>         Ubuntu 18.04.4 LTS   4.15.0-88-generic   docker://19.3.6
 k8s-worker3   Ready    <none>   16m   v1.17.3   10.0.200.135   <none>         Ubuntu 18.04.4 LTS   4.15.0-88-generic   docker://19.3.6
+```
+
+All pods should be reporting ready (may take some time for Calico containers to fire up and get into running state):
+
+```shell
+$ kubectl get pods --all-namespaces
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-6b9d4c8765-jm2p8   1/1     Running   0          10m
+kube-system   calico-node-khs58                          1/1     Running   0          10m
+kube-system   calico-node-m7j6n                          1/1     Running   0          10m
+kube-system   calico-node-tgbvs                          1/1     Running   0          10m
+kube-system   calico-node-x2krg                          1/1     Running   0          10m
+kube-system   coredns-6955765f44-p6h47                   1/1     Running   0          33m
+kube-system   coredns-6955765f44-tc5t6                   1/1     Running   0          33m
+kube-system   etcd-k8s-master                            1/1     Running   0          33m
+kube-system   kube-apiserver-k8s-master                  1/1     Running   0          33m
+kube-system   kube-controller-manager-k8s-master         1/1     Running   3          33m
+kube-system   kube-proxy-5zhpg                           1/1     Running   0          24m
+kube-system   kube-proxy-7frd8                           1/1     Running   0          24m
+kube-system   kube-proxy-lvbwd                           1/1     Running   0          33m
+kube-system   kube-proxy-r2d7w                           1/1     Running   0          25m
+kube-system   kube-scheduler-k8s-master                  1/1     Running   3          33m
 ```
