@@ -21,10 +21,10 @@ After downloading the OVA above we will need to use `govc` to connect to vCenter
 
 Install `govc` from github: https://github.com/vmware/govmomi/tree/master/govc
 
-`govc` will require specific configuration paramters to connect and authenticate with vCenter. Instead of providing this information everytime you want to connect to vCenter we can use a file and export the parameters into our current shell. I am creating a file called `govcparms.sh` to store the required parameters. Execute the following to create the file and edit as needed to fit your vCenter environment.
+`govc` will require specific configuration parameters to connect and authenticate with vCenter. Instead of providing this information everytime you want to connect to vCenter we can use a file and export the parameters into our current shell. I am creating a file called `govcparms.sh` to store the required parameters. Execute the following to create the file and edit as needed to fit your vCenter environment.
 
 ```shell
-sudo tee ${PWD}/govcparms.sh >/dev/null <<EOF
+$ sudo tee ${PWD}/govcparms.sh >/dev/null <<EOF
 export GOVC_INSECURE=1 # Don't verify SSL certs on vCenter
 export GOVC_URL=10.0.200.41 # vCenter IP/FQDN
 export GOVC_USERNAME=administrator@vsphere.local # vCenter username
@@ -38,7 +38,7 @@ EOF
 Next, load the above variables into your current shell:
 
 ```shell
-source ${PWD}/govcparms.sh
+$ source ${PWD}/govcparms.sh
 ```
 
 We should now be able to test if `govc` is able to connect to vCenter:
@@ -60,7 +60,7 @@ UUID:         2666c667-84f8-42b4-b2ce-10e12fb9c63a
 Using `govc` extract the OVF specification file from the Ubuntu OVA (downloaded earlier). This will create the spec file to the file in your present directory called `ubuntuspec.json`:
 
 ```shell
-govc import.spec ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova | python3 -m json.tool > ubuntuspec.json
+$ govc import.spec ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova | python3 -m json.tool > ubuntuspec.json
 ```
 
 > Note: You may need to modify the above command to meet the requirements of your installed python version. In this case I am running python3 only but you can change the command to "python -m json" if you are running python2.x.
@@ -124,7 +124,7 @@ Below is an example of my configuration:
 We will now deploy the Ubuntu cloud image OVA to vCenter using our customized OVF specification (above). You will pass the `ubuntuspec.json` file as an option to the `govc` command:
 
 ```shell
-govc import.ova -options=ubuntuspec.json ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova
+$ govc import.ova -options=ubuntuspec.json ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova
 ```
 
 Modify the VM hardware properties changing the VM configuration to **4 vCPU, 4GB of RAM, and 60GB hard disk**. Recall we configured thin provisioned disks so all 60GB will not be used. Also, kubernetes vSphere integration requires that `disk.enableUUID=1` be set on all VMware-based virtual machines. Finally, power on the virtual machine to proceed to post-configuration steps:
