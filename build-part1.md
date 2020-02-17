@@ -1,10 +1,12 @@
 # Kubernetes with vSphere Integration (Part 1)
-This is an ongoing configuration guide to deploy kubernetes on vSphere leveraging the vSphere cloud provider container storage interface. This is a work in progress.
+Author: Josh Perkins
+
+This is an ongoing configuration guide to deploy kubernetes on vSphere leveraging the vSphere cloud provider container storage interface. This guide should assist those learning Kubernetes with deploying very recent versions of Kubernetes, Docker, and Kubernetes Dashboard.
 
 ## Version History
-| Version          | Description                                |
-| ---------------- | ------------------------------------------ |
-| 0.1 (02/17/2020) | Initial (Kubernetes 1.17.3, Docker 19.3.6) |
+| Version          | Description                                                           |
+| ---------------- | --------------------------------------------------------------------- |
+| 0.1 (02/17/2020) | Initial (Kubernetes 1.17.3, Docker 19.3.6, k8s Dashboard 2.0.0-beta8) |
 
 ## Prerequisites
 You will need a linux desktop to proceed with many of the items in this configuration guide. You can also leverage MacOS with `brew` to perform the same.

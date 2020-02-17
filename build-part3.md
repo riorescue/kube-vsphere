@@ -19,7 +19,9 @@ echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt
 $ yum update && yum install kubectl -y
 ```
 
-After installing kubectl you will need a copy of `admin.conf` from the Control-Plane node at `/etc/kubernetes/admin.conf`. Copy `admin.conf` to the management machine (Ubuntu).
+> More info on kubectl installation and options can be found here: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
+After installing kubectl you will need a copy of `admin.conf` from the Control-Plane node at `/etc/kubernetes/admin.conf`. Copy `admin.conf` to the management machine (Ubuntu). Notice that admin.conf is being copied into the home path `.kube` with a new name `config`.
 
 ```shell
 mkdir -p $HOME/.kube
@@ -30,7 +32,14 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 Test if connectivity to the cluster has been granted:
 
 ```shell
-$ kubectl config view
+$ kubectl cluster-info
+```
+
+Output:
+
+```shell
+Kubernetes master is running at https://k8s-master.lab.vstable.com:6443
+KubeDNS is running at https://k8s-master.lab.vstable.com:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 ```
 
 ### Install Kubernetes Dashboard
@@ -132,7 +141,7 @@ ca.crt:     1025 bytes
 By default, the Kubernetes Dashboard is ONLY accessble from within the cluster (not externally). You must leverage kubectl proxy to access the system. On the management node start the proxy:
 
 ```shell
-$ kubectl proxy
+$ kubectl proxy &
 ```
 
 Open the Dashboard
@@ -148,4 +157,6 @@ Change the access mode to `token` and copy/paste the token from the secret above
 Once the Kubernetes Dashboard is loaded change the *Namespace* dropdown to *All namespaces*
 
 ![kube-dash](/assets/kube-dash.png)
+
+More info on Dashboard can be found here: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 
