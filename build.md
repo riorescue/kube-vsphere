@@ -147,7 +147,7 @@ Name:           Ubuntu1804CloudTemplate
   Power state:  poweredOn
   Boot time:    2020-02-17 17:18:55.320752 +0000 UTC
   IP address:   10.0.200.109
-  Host:         esx.lab.example.com
+  Host:         esx.lab.vstable.com
 ```
 
 SSH to the new virtual machine. You will be logged in automatically through key-based authentication because you included your SSH public key in the `ubuntuspec.json` file ealier. You will be required to change the password of the `ubuntu` account at first login (do not try to re-use the previous password).
@@ -236,3 +236,42 @@ govc vm.markastemplate Ubuntu1804CloudTemplate
 ```
 
 ### Create VMware Guest Customization Specification in vCenter
+Unfortunately, `govc` cannot currently be used to create VMware Guest Customization Specifications and therefore you either need to do this manually or use PowerShell. I will leverage PowerShell because it's easier to document:
+
+> Linux or MacOS can now run PowerShell and Windows is not a requirement to proceed. The easiest way to get PowerShell on Unbutu is via a Snap.
+
+```$ sudo snap install powershell –classic```
+
+Once PowerShell is installed you can start if from the command-line:
+
+```$ pwsh```
+
+Install the VMware PowerCLI (if you haven't already done so previously):
+
+```powershell
+> Install-Module -Name VMware.PowerCLI
+```
+
+Connect to your Virtual Center server:
+
+```powershell
+> Connect-VIServer 10.0.200.41 -User administrator@vsphere.local -Password P@ssw0rd110
+```
+
+A successfull connection should return the following:
+```shell
+Name                           Port  User
+----                           ----  ----
+10.0.200.41                    443   VSPHERE.LOCAL\Administrator
+```
+
+Create a new VMware Guest Customization Specification. Note that you may specify multiple DNS servers separating each with a comma (ex. 1.1.1.1,2.2.2.2):
+```powershell
+New-OSCustomizationSpec -Name Ubuntu1804 -OSType Linux -DnsServer 10.0.200.1 -DnsSuffix lab.vstable.com -Domain lab.vstable.com -NamingScheme vm
+```
+
+> If your vCenter is using self-signed certifcates (common in lab scenarios) you may need to configure PowerCLI to ignore the SSL certificate (see below)
+```powershell
+> Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false
+```
+
