@@ -1,4 +1,4 @@
-# Intro
+# Kubernetes with vSphere Integration
 This is an ongoing configuration guide to deploy kubernetes on vSphere leveraging the vSphere cloud provider container storage interface. This is a work in progress.
 
 ## Version History
@@ -10,11 +10,12 @@ This is an ongoing configuration guide to deploy kubernetes on vSphere leveragin
 You will need a linux desktop to proceed with many of the items in this configuration guide. You can also leverage MacOS with `brew` to perform the same.
 
 ## Build Virtual Machine Template
+### Install and Configure govc
 We will be using the Ubuntu Server 18.04 LTS (Bionic Beaver) official Cloud Image as a reference to create our template virtual machine. By default this OVA leverages cloud-init which we will be disabling and instead using VMware vSphere VM Customization Specifications (created later).
 
 https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.ova
 
-After downloading the OVA above we will need to use `govc` to connect to vCenter and create the template and VM Customization Specifications that will eventually be used to deploy kubernetes control-place and worker nodes.
+After downloading the OVA above we will need to use `govc` to connect to vCenter and create the template and VM Customization Specifications that will eventually be used to deploy kubernetes control-plane and worker nodes.
 
 Install `govc` from github: https://github.com/vmware/govmomi/tree/master/govc
 
@@ -53,3 +54,11 @@ Product ID:   vpx
 UUID:         2666c667-84f8-42b4-b2ce-10e12fb9c63a
 ```
 
+#### Extract and Customize the OVF Specification
+Using `govc` extract the OVF specification file from the Ubuntu OVA (downloaded earlier). This will create the spec file to the file in your present directory called `ubuntuspec.json`:
+
+```shell
+govc import.spec ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova | python3 -m json.tool > ubuntuspec.json
+```
+
+> Note: You may need to modify the above command to meet the requirements of your installed python version. In this case I am running python3 only but you can change the command to "python -m json" if you are running python2.x.
