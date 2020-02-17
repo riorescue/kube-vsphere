@@ -10,4 +10,7 @@ This is an ongoing configuration guide to deploy kubernetes on vSphere leveragin
 You will need a linux desktop to proceed with many of the items in this configuration guide. You can also leverage MacOS with <code>brew</code> to perform the same.
 
 # Build Virtual Machine Template
-We will be using the Ubuntu cloud image as a reference image. By default this ova leverages cloud-init which we will be disabling and instead using VMware vSphere VM Customization Specifications.
+We will be using the Ubuntu Server 18.04 LTS (Bionic Beaver) official Cloud Image as a reference to create our templave virtual machine. By default this ova leverages cloud-init which we will be disabling and instead using VMware vSphere VM Customization Specifications (created later).
+
+https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.ova
+
