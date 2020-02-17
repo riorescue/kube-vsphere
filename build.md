@@ -54,7 +54,7 @@ Product ID:   vpx
 UUID:         2666c667-84f8-42b4-b2ce-10e12fb9c63a
 ```
 
-#### Extract and Customize the OVF Specification
+### Extract and Customize the OVF Specification
 Using `govc` extract the OVF specification file from the Ubuntu OVA (downloaded earlier). This will create the spec file to the file in your present directory called `ubuntuspec.json`:
 
 ```shell
@@ -62,3 +62,177 @@ govc import.spec ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova | python3 -m
 ```
 
 > Note: You may need to modify the above command to meet the requirements of your installed python version. In this case I am running python3 only but you can change the command to "python -m json" if you are running python2.x.
+
+Edit the `ubuntuspec.json` file updating the following fields:
+* Change `DiskProvisioning` from "flat" to "thin"
+* Change `hostname` value to `Ubuntu1804CloudTemplate`
+* Change `public-keys` value to (your SSH public key) (see below for example)
+* Change `password` to a *temporary* value `VMware9!` (you will be required to change this later)
+* Change `VM Network` to your specified network portgroup name. In my case it's `vlan200-labnet`
+* Change `name` from null to the same value you used for `hostname` above
+
+Below is an example of my configuration:
+
+```json
+{
+    "DiskProvisioning": "thin",
+    "IPAllocationPolicy": "dhcpPolicy",
+    "IPProtocol": "IPv4",
+    "PropertyMapping": [
+        {
+            "Key": "instance-id",
+            "Value": "id-ovf"
+        },
+        {
+            "Key": "hostname",
+            "Value": "Ubuntu1804CloudTemplate"
+        },
+        {
+            "Key": "seedfrom",
+            "Value": ""
+        },
+        {
+            "Key": "public-keys",
+            "Value": "ssh-rsa AAAAB3NzaC1yc2EA[truncated] lnxcfg@ubuntu1804cloudtemplate"
+        },
+        {
+            "Key": "user-data",
+            "Value": ""
+        },
+        {
+            "Key": "password",
+            "Value": "VMware9!"
+        }
+    ],
+    "NetworkMapping": [
+        {
+            "Name": "VM Network",
+            "Network": "vlan200-labnet"
+        }
+    ],
+    "MarkAsTemplate": false,
+    "PowerOn": false,
+    "InjectOvfEnv": false,
+    "WaitForIP": false,
+    "Name": "Ubuntu1804CloudTemplate"
+}
+```
+
+### Deploy the OVA
+We will now deploy the Ubuntu cloud image OVA to vCenter using our customized OVF specification (above). You will pass the `ubuntuspec.json` file as an option to the `govc` command:
+
+```shell
+govc import.ova -options=ubuntuspec.json ~/Downloads/ubuntu-18.04-server-cloudimg-amd64.ova
+```
+
+Modify the VM hardware properties changing the VM configuration to **4 vCPU, 4GB of RAM, and 60GB hard disk**. Recall we configured thin provisioned disks so all 60GB will not be used. Also, kubernetes vSphere integration requires that `disk.enableUUID=1` be set on all VMware-based virtual machines. Finally, power on the virtual machine to proceed to post-configuration steps:
+
+```shell
+govc vm.change -vm Ubuntu1804CloudTemplate -c 4 -m 4096 -e="disk.enableUUID=1"
+govc vm.disk.change -vm Ubuntu1804CloudTemplate -disk.label "Hard disk 1" -size 60G
+govc vm.power -on=true Ubuntu1804CloudTemplate
+```
+
+### Prepare the VM for Templating
+To proceed, you will need to obtain the Ubuntu cloud  VM's IP address to that you can SSH to it. This can either be done through vCenter or using `govc` at the command-line:
+
+```shell
+$ watch -n 10 govc vm.info Ubuntu1804CloudTemplate
+Name:           Ubuntu1804CloudTemplate
+  Path:         /Datacenter/vm/Ubuntu1804CloudTemplate
+  UUID:         4238b5ba-ac62-6d0a-1ac7-c4764e8274be
+  Guest name:   Ubuntu Linux (64-bit)
+  Memory:       4096MB
+  CPU:          4 vCPU(s)
+  Power state:  poweredOn
+  Boot time:    2020-02-17 17:18:55.320752 +0000 UTC
+  IP address:   10.0.200.109
+  Host:         esx.lab.example.com
+```
+
+SSH to the new virtual machine. You will be logged in automatically through key-based authentication because you included your SSH public key in the `ubuntuspec.json` file ealier. You will be required to change the password of the `ubuntu` account at first login (do not try to re-use the previous password).
+
+```shell
+$ ssh ubuntu@10.0.200.109
+```
+
+> After changing the password for user `ubuntu` you will be automatically logged out. 
+
+SSH back to the virtual machine and update using apt:
+
+```shell
+ssh ubuntu@10.0.200.109
+sudo apt update
+sudo apt install open-vm-tools -y
+sudo apt upgrade -y
+sudo apt autoremove -y
+```
+
+Because we are no longer going to use the in-built/configured `cloud-init` system we are going to cleanup and disable it:
+
+```shell
+sudo cloud-init clean --logs
+sudo touch /etc/cloud/cloud-init.disabled
+sudo rm -rf /etc/netplan/50-cloud-init.yaml
+sudo apt purge cloud-init -y
+sudo apt autoremove -y
+```
+
+Configure systemd to start open-vm-tools which will be used with the VMware Guest Customization process:
+
+```shell
+sudo sed -i 's/D \/tmp 1777 root root -/#D \/tmp 1777 root root -/g' /usr/lib/tmpfiles.d/tmp.conf
+sudo sed -i 's/Before=cloud-init-local.service/After=dbus.service/g' /lib/systemd/system/open-vm-tools.service
+```
+
+Perform pre-templating cleanup (*provided by blah.cloud*):
+
+```shell
+# cleanup current ssh keys so templated VMs get fresh key
+sudo rm -f /etc/ssh/ssh_host_*
+
+# add check for ssh keys on reboot...regenerate if neccessary
+sudo tee /etc/rc.local >/dev/null <<EOL
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+
+# By default this script does nothing.
+test -f /etc/ssh/ssh_host_dsa_key || dpkg-reconfigure openssh-server
+exit 0
+EOL
+
+# make the script executable
+sudo chmod +x /etc/rc.local
+
+# cleanup apt
+sudo apt clean
+
+# reset the machine-id (DHCP leases in 18.04 are generated based on this... not MAC...)
+echo "" | sudo tee /etc/machine-id >/dev/null
+
+# disable swap for K8s
+sudo swapoff --all
+sudo sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab
+
+# cleanup shell history and shutdown for templating
+history -c
+history -w
+sudo shutdown -h now
+```
+
+Convert the virtual machine to a template:
+
+```shell
+govc vm.markastemplate Ubuntu1804CloudTemplate
+```
+
+### Create VMware Guest Customization Specification in vCenter
