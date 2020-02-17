@@ -38,7 +38,7 @@ $ sudo mkdir /etc/kubernetes
 ```
 
 ```shell
-sudo tee /etc/kubernetes/vsphere.conf >/dev/null <<EOF
+$ sudo tee /etc/kubernetes/vsphere.conf >/dev/null <<EOF
 [Global]
 user = "administrator@vsphere.local"
 password = "P@ssw0rd110"
@@ -64,7 +64,7 @@ EOF
 **On the control-plane node "k8s-master"** create a new file called `kubeadm.conf`. This file is like a roadmap for kubeadm to bootstrap the control-plane node. This file will reference the `vsphere.conf` file created above. Ensure you update the IP address information and DNS name to reflect your environment.
 
 ```shell
-sudo tee /etc/kubernetes/kubeadm.conf >/dev/null <<EOF
+$ sudo tee /etc/kubernetes/kubeadm.conf >/dev/null <<EOF
 ---
 apiServer:
   extraArgs:
@@ -176,7 +176,7 @@ Configure Docker daemon switching over to systemd cdgroup driver.
 
 ```shell
 # Setup daemon parameters, like log rotation and cgroups
-sudo tee /etc/docker/daemon.json >/dev/null <<EOF
+$ sudo tee /etc/docker/daemon.json >/dev/null <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
