@@ -504,3 +504,7 @@ kube-system   kube-proxy-lvbwd                           1/1     Running   0    
 kube-system   kube-proxy-r2d7w                           1/1     Running   0          25m
 kube-system   kube-scheduler-k8s-master                  1/1     Running   3          33m
 ```
+
+### Continue to Part 3
+We are now ready to install the Kubernetes Dashboard
+[Continue to part 3](build-part3.md)
