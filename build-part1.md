@@ -1,4 +1,4 @@
-# Kubernetes with vSphere Integration
+# Kubernetes with vSphere Integration (Part 1)
 This is an ongoing configuration guide to deploy kubernetes on vSphere leveraging the vSphere cloud provider container storage interface. This is a work in progress.
 
 ## Version History
@@ -150,7 +150,7 @@ Name:           Ubuntu1804CloudTemplate
   Host:         esx.lab.vstable.com
 ```
 
-SSH to the new virtual machine. You will be logged in automatically through key-based authentication because you included your SSH public key in the `ubuntuspec.json` file ealier. You will be required to change the password of the `ubuntu` account at first login (do not try to re-use the previous password).
+SSH to the new virtual machine. You will be logged in automatically through key-based authentication because you included your SSH public key in the `ubuntuspec.json` file ealier. You will be required to change the password of the `ubuntu` account at first login (do not try to re-use the previous password). Recall the *current password* was set in the ubuntuspec.json file and is **VMware9!**
 
 ```shell
 $ ssh ubuntu@10.0.200.109
@@ -303,4 +303,6 @@ Name:           k8s-worker2
 
 ```
 
-## Configure Kubernetes Nodes (basics)
+### Continue to Part 2
+We are now ready to configure general requirements for our Kubernetes build.
+[Continue to part 2](build-part2.md)
