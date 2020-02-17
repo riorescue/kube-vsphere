@@ -270,8 +270,37 @@ Create a new VMware Guest Customization Specification. Note that you may specify
 New-OSCustomizationSpec -Name Ubuntu1804 -OSType Linux -DnsServer 10.0.200.1 -DnsSuffix lab.vstable.com -Domain lab.vstable.com -NamingScheme vm
 ```
 
-> If your vCenter is using self-signed certifcates (common in lab scenarios) you may need to configure PowerCLI to ignore the SSL certificate (see below)
+> If your vCenter is using self-signed certifcates (common in lab scenarios) you may need to configure PowerCLI to ignore SSL certificate warnings (see below)
 ```powershell
 > Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false
 ```
 
+### Deploy Virtual Machines for Control-Plane and Worker Nodes
+Deploy new virtual machines to be used later in this tutorial. We will be deploying a single control-plane virtual machine with 3 worker nodes. These deployments will leverage the template vm and VMware Customization Specification created above.
+
+```shell
+govc vm.clone -vm Ubuntu1804CloudTemplate -customization=Ubuntu1804  k8s-master
+govc vm.clone -vm Ubuntu1804CloudTemplate -customization=Ubuntu1804  k8s-worker1
+govc vm.clone -vm Ubuntu1804CloudTemplate -customization=Ubuntu1804  k8s-worker2
+govc vm.clone -vm Ubuntu1804CloudTemplate -customization=Ubuntu1804  k8s-worker3
+```
+
+> Be sure to exit the PowerShell (pwsh) command-shell prior to executing the above commands using `govc`
+
+Once all 4 virtual machines have been deployed you can leverage `govc` to check the IP addresses of each machine:
+
+```shell
+$ watch -n 10 "govc find / -type m -name 'k8s*' | xargs govc vm.info | grep 'Name:\|IP'"
+
+Name:           k8s-master
+  IP address:   10.0.200.123
+Name:           k8s-worker3
+  IP address:   10.0.200.135
+Name:           k8s-worker1
+  IP address:   10.0.200.207
+Name:           k8s-worker2
+  IP address:   10.0.200.129
+
+```
+
+## Configure Kubernetes Nodes (basics)
