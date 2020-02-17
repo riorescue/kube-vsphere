@@ -21,7 +21,7 @@ After downloading the OVA above we will need to use `govc` to connect to vCenter
 
 Install `govc` from github: https://github.com/vmware/govmomi/tree/master/govc
 
-`govc` will require specific configuration paramters to connect and authenticate with vCenter. Instead of providing this information everytime you want to connect to vCenter we can use a file and export the parameters into our current shell. I am creating a file called `govcparms.sh` to store the required parameters. Execute the following to create the file and edit as needed to fit your vCenter environment.
+`govc` will require specific configuration parameters to connect and authenticate with vCenter. Instead of providing this information everytime you want to connect to vCenter we can use a file and export the parameters into our current shell. I am creating a file called `govcparms.sh` to store the required parameters. Execute the following to create the file and edit as needed to fit your vCenter environment.
 
 ```shell
 sudo tee ${PWD}/govcparms.sh >/dev/null <<EOF
