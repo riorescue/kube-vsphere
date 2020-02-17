@@ -2,9 +2,9 @@
 This is an ongoing configuration guide to deploy kubernetes on vSphere leveraging the vSphere cloud provider container storage interface. This is a work in progress.
 
 ## Version History
-| Version          | Description |
-| ---------------- | ----------- |
-| 0.1 (02/17/2020) | Initial     |
+| Version          | Description                                |
+| ---------------- | ------------------------------------------ |
+| 0.1 (02/17/2020) | Initial (Kubernetes 1.17.3, Docker 19.3.6) |
 
 ## Prerequisites
 You will need a linux desktop to proceed with many of the items in this configuration guide. You can also leverage MacOS with `brew` to perform the same.
@@ -300,9 +300,18 @@ Name:           k8s-worker1
   IP address:   10.0.200.207
 Name:           k8s-worker2
   IP address:   10.0.200.129
+```
 
+### Cleanup vCenter Inventory
+Create a new Virtual Machine folder named `k8s` to store your Kubernetes virtual machine nodes. Be sure to replace `Datacenter` below with the name of **your** vCenter Datacenter.
+
+```shell
+govc folder.create /Datacenter/vm/k8s
+govc object.mv /Datacenter/vm/k8s-\* /Datacenter/vm/k8s
 ```
 
 ### Continue to Part 2
 We are now ready to configure general requirements for our Kubernetes build.
 [Continue to part 2](build-part2.md)
+
+> Optional: You may want to take snapshots of each of the four virtual machines if this is your first time configuring Kubernetes. This will allow a more easy rollback and start if something goes wrong.
